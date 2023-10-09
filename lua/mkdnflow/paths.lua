@@ -55,7 +55,7 @@ end
 exists() determines whether the path specified as the argument exists
 NOTE: Assumes that the initially opened file is in an existing directory!
 --]]
-local exists = function(path, unit_type)
+local exists = function(path, unit_type, escaped)
     -- If type is not specified, use "d" (directory) by default
     unit_type = unit_type or 'd'
     local handle
@@ -69,11 +69,17 @@ local exists = function(path, unit_type)
         handle = io.popen(command)
     else
         -- Use the shell to determine if the path exists
+        local escapePath = path
+        if escaped == nil then
+            escapePath = utils.escapeChars(path)
+        else
+            escapePath = path
+        end
         handle = io.popen(
             'if [ -'
                 .. unit_type
                 .. ' '
-                .. utils.escapeChars(path)
+                .. escapePath
                 .. ' ]; then echo true; else echo false; fi'
         )
     end
@@ -259,7 +265,7 @@ local open = function(path, type)
     -- false alert if there are escape chars
     if type == 'url' then
         shell_open(path)
-    elseif exists(path, 'f') == false and exists(path, 'd') == false then
+    elseif exists(path, 'f', true) == false and exists(path, 'd', true) == false then
         if not silent then
             vim.api.nvim_echo(
                 { { '⬇️  ' .. path .. " doesn't seem to exist!", 'ErrorMsg' } },
@@ -296,6 +302,7 @@ local handle_external_file = function(path)
                 escaped_path = string.gsub(escaped_path, '^~/', '$HOME/')
             end
         end
+
     elseif perspective.priority == 'root' and root_dir then
         -- Paste together root directory path and path in link and escape
         escaped_path = this_os:match('Windows') and root_dir .. sep .. real_path
