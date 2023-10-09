@@ -241,7 +241,9 @@ local open = function(path, type)
     local shell_open = function(path_)
         path_ = path_:gsub('%%', '\\%%')
         if this_os == 'Linux' then
-            vim.api.nvim_command('silent !xdg-open ' .. path_)
+            --vim.api.nvim_command('silent !xdg-open ' .. path_)
+            --vim.api.nvim_command('silent !wsl-open ' .. path_)
+            vim.api.nvim_command('!wsl-open ' .. path_)
         elseif this_os == 'Darwin' then
             vim.api.nvim_command('silent !open ' .. path_ .. ' &')
         elseif this_os:match('Windows') then
